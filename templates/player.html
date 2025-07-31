@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Video Player</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.0/socket.io.js"></script>
     <style>
         body{
             background-color: rgb(43, 43, 43);
@@ -27,6 +29,20 @@
             justify-content: center;
             gap:10px;
         }
+        .infocontainer{
+            display:flex;
+            flex-direction: column;
+            justify-content:center;
+            align-items: center;
+            height:100%;
+            width:20%;
+            margin-left: 25px;
+        }
+        .infocontainer img{
+            width:70%;
+            height:auto;
+            box-shadow: 0px 2px 5px black;
+        }
         .container iframe{
             width:100%;
             height:100%;
@@ -38,11 +54,32 @@
             box-shadow: 0 2px 5px black;
             border-color: white;
             
+            
         }
         .container iframe:hover{
             opacity: 100%;
             cursor: pointer;
         }
+        .labelholder{
+            justify-content: center;
+            display: flex;
+            align-items: center;
+            margin-top: 10px;
+            flex-direction: column;
+        }
+        label {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            font-weight: bold;
+            color: aliceblue;
+            text-shadow: 0 2px 5px black;
+            
+        }
+        .movieinfo {
+            font-size:.8rem;
+            text-align: center;
+        }
+        
     </style>
 </head>
 <body>
@@ -51,21 +88,38 @@
         <!--<iframe width="1280" height="720" src="https://hianime.to/watch/dragon-ball-super-broly-387?ep=58063" title="Dragon Ball Super: Broly Movie Trailer (English Dub Reveal) Exclusive - Comic Con 2018" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>-->
         <iframe width="1280" height="720" src='' title="Video" id="embedded-content" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
     </div>
-            
-    
-</body>
-<script>
-    var urlParams = new URLSearchParams(window.location.search);
-    var movienum = urlParams.get('movienum');
-    
+    <div class="infocontainer">
+        <img src="https://drive.google.com/file/d/1pU4pzda6kvsLsHGSBcMJd9ZL5rAwGXKA/view?usp=sharing" id="MovieCover">
+        <div class="labelholder">
+            <label id="Title1">Title</label>
+            <label id="Information" class="movieinfo">Information</label>
+        </div>
 
-    $(document).ready(function() {
-        $.post("/links", { button_number: buttonNumber }, function(data) {
-            var linkmovie= data.link
+        
+    </div>
+    
+    <script>
+        $(document).ready(function() {
+        var urlParams = new URLSearchParams(window.location.search);
+        var movienum = urlParams.get('buttonNumber');
+    
+        $.post("/links", { button_number: movienum }, function(data) {
+            var linkmovie = data.link;
+            document.getElementById('embedded-content').src = linkmovie;
+        });
+        $.post("/image+info", { infonum: movienum }, function(data) {
+            var movieimage = data.movieimage;
+            document.getElementById('MovieCover').src = movieimage;
+            var movietitle = data.movietitle;
+            $('#Title1').text(movietitle);
+            var movieinfo=data.movieinfo;
+            $('#Information').text(movieinfo);
         });
     });
-    document.getElementById('embedded-content').src = link;
+    
+    </script>     
+    
+</body>
 
-</script>
 
 </html>

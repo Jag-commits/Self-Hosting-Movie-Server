@@ -65,19 +65,41 @@
             cursor: pointer;
             image-rendering: crisp-edges;
         }
+        .Forms{
+            display: flex;
+            justify-content: center;
+            padding-top: 25px;
+            padding-bottom: 10px;
+
+        }
+        .Forms input{
+            border-radius: 15px;
+            border:none;
+            height:35px;
+            width:175px;
+            text-align: center;
+            box-shadow:  0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .Forms input:hover{
+            height:40px;
+            width:180px;
+            transition: 0.3s ease-in-out;
+        }
+        
     </style>
 </head>
 <body>
-    <div class="header">
-        <img src="https://hianime.to/images/logo.png?v=0.1" alt="" id="logo">
+    
+    <div class = "Forms">
+        <input type="text" placeholder="Enter Movie Name" id="Searchbar">
     </div>
-<div class="bodyset">
+    <div class = "bodyset">
     <div class="container">
-        <img src="https://ohsmagnet.com/wp-content/uploads/2019/04/unnamed-607x900.jpg" alt=""id="1" class="clickable-image">
-        <img src="https://i.redd.it/gnv94oll6im01.jpg" alt="" id="2" class="clickable-image">
-        <img src="https://a.storyblok.com/f/178900/960x1348/a49c330773/3cc622bba797a81984c7e437b39bd3461662992599_main.jpg/m/filters:quality(95)format(webp)" alt="" id="3" class="clickable-image"/>
-        <img src="https://m.media-amazon.com/images/M/MV5BMTA5MTc1M2EtZWQ2Ni00ZmU2LTg3MzQtOTliMjE4OGM0ZWFiXkEyXkFqcGc@._V1_.jpg" alt="" id="4" class="clickable-image"/>
-        <img src="https://m.media-amazon.com/images/M/MV5BMTg1MTY2MjYzNV5BMl5BanBnXkFtZTgwMTc4NTMwNDI@._V1_.jpg" alt=""id="5" class="clickable-image">
+        <img src="https://ohsmagnet.com/wp-content/uploads/2019/04/unnamed-607x900.jpg" alt=""id="1" identity = ''  class="clickable-image">
+        <img src="https://i.redd.it/gnv94oll6im01.jpg" alt="" id="2" identity = ''  class="clickable-image">
+        <img src="https://a.storyblok.com/f/178900/960x1348/a49c330773/3cc622bba797a81984c7e437b39bd3461662992599_main.jpg/m/filters:quality(95)format(webp)" alt="" id="3" identity = '' class="clickable-image"/>
+        <img src="https://m.media-amazon.com/images/M/MV5BMTA5MTc1M2EtZWQ2Ni00ZmU2LTg3MzQtOTliMjE4OGM0ZWFiXkEyXkFqcGc@._V1_.jpg" alt="" id="4" identity = ''  class="clickable-image"/>
+        <img src="https://m.media-amazon.com/images/M/MV5BMTg1MTY2MjYzNV5BMl5BanBnXkFtZTgwMTc4NTMwNDI@._V1_.jpg" alt=""id="5" identity = ''  class="clickable-image">
     </div>
 </div>
             
@@ -98,16 +120,53 @@
     });
     });*/
 
+    $(document).ready(function() {   
+    $.get('/indexpull', function(data) {
+        var img1=data.img1;
+        var img2=data.img2;
+        var img3=data.img3;
+        var img4=data.img4;
+        var img5=data.img5;
+        var b1=data.b1;
+        var b2=data.b2;
+        var b3=data.b3;
+        var b4=data.b4;
+        var b5=data.b5;
+        document.getElementById('1').src = img1;
+        document.getElementById('2').src = img2;
+        document.getElementById('3').src = img3;
+        document.getElementById('4').src = img4;
+        document.getElementById('5').src = img5;
+
+        document.getElementById("1").setAttribute("identity",b1);
+        document.getElementById("2").setAttribute("identity",b2);
+        document.getElementById("3").setAttribute("identity",b3);
+        document.getElementById("4").setAttribute("identity",b4);
+        document.getElementById("5").setAttribute("identity",b5);
+    });
+});    
 $(document).ready(function() {
     $(".clickable-image").click(function() {
-        var buttonNumber = $(this).attr("id");
-        $.post("/links", { button_number: buttonNumber }, function(data) {
-            window.location.href = "/player.html/?link="
-        });
+        var buttonNumber = $(this).attr("identity");
+        window.location.href = "/player.html?buttonNumber=" + encodeURIComponent(buttonNumber)
     });
 });
+
+$(document).ready(function() {
+    $("#Searchbar").on("input", function(event)  {
+        if (event.key=="Enter"){
+        var name = $('#Searchbar').val();
+        $.post("/NameSearch", { moviename: name }, function(data) {
+            var buttonNumber = data.movienumber;
+            window.location.href = "/player.html?buttonNumber=" + encodeURIComponent(buttonNumber);
+        });    
+    }
+    });
+});
+
 $(document).ready(function() {
     $('#logo').click(function() {
+        
         window.location.href = "https://hianime.to/home";
         console.log("success")
     });
