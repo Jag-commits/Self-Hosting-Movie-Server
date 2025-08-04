@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Search Results</title>
+  <style>
+    /* Background and font */
+    body {
+      margin: 0;
+      font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      background: #141414;
+      color: #fff;
+    }
+
+    .container {
+      justify-content:center;
+      padding: 20px 40px;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      justify-self: center;
+      font-weight: 700;
+      font-size: 2.5rem;
+      margin-bottom: 30px;
+      color: #ffffff; /* Netflix red */
+    }
+
+    /* Grid container for movies */
+    .movies-grid {
+      display: grid;
+      /* Auto fill has a problem where it defaults to 7 items per row */
+      grid-template-columns: repeat(6, minmax(180px, 1fr));
+      gap: 16px;
+      justify-items: center;
+    }
+
+    /* Each movie tile */
+    .movie-tile {
+      position: relative;
+      width: 180px;
+      height: 270px; /* 2:3 aspect ratio typical of posters */
+      border-radius: 8px;
+      overflow: hidden;
+      cursor: pointer;
+      background-color: #222;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.8);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .movie-tile:hover {
+      transform: scale(1.08);
+      box-shadow: 0 8px 20px rgba(159, 3, 173, 0.8);
+      z-index: 10;
+    }
+
+    /* Poster image */
+    .movie-tile img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    /* Overlay gradient & title */
+    .movie-title {
+      position: absolute;
+      bottom: 0;
+      width: 100%;
+      padding: 10px 12px;
+      background: linear-gradient(180deg, transparent, rgba(20,20,20,0.9));
+      color: #fff;
+      font-weight: 600;
+      font-size: 12px;
+      text-align: center;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* Pagination style */
+    .pagination {
+      margin-top: 30px;
+      text-align: center;
+    }
+
+    .pagination button {
+      background-color: transparent;
+      color: #888;
+      border: none;
+      padding: 8px 14px;
+      margin: 0 6px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      border-radius: 4px;
+      transition: color 0.3s ease, background-color 0.3s ease;
+    }
+
+    .pagination button:hover:not(:disabled) {
+      color: #e50914;
+      background-color: rgba(229,9,20,0.1);
+    }
+
+    .pagination button.active {
+      color: #e50914;
+      cursor: default;
+      font-weight: 700;
+    }
+
+    .pagination button:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+    .Forms{
+            display: flex;
+            justify-content: center;
+            padding-top: 0px;
+            padding-bottom: 10px;
+
+        }
+    .Forms input{
+            border-radius: 15px;
+            border:none;
+            height:35px;
+            width:175px;
+            text-align: center;
+            box-shadow:  0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+    .Forms input:hover{
+            height:40px;
+            width:180px;
+            transition: 0.3s ease-in-out;
+      }
+  </style>
+</head>
+<body>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+  <div class="container">
+    <h1>Search Results</h1>
+     <div class = "Forms">
+        <input type="text" placeholder="Enter Movie Name" id="Searchbar">
+    </div>
+    <div id="movies-grid" class="movies-grid"></div>
+    <div id="pagination" class="pagination"></div>
+  </div>
+
+  <script>
+    const PAGE_SIZE = 35
+    let currentPage = 1;
+    let totalPages = 1;
+    let allIndexes = [];
+    
+
+    document.addEventListener("DOMContentLoaded", () => {
+      const query = getQueryParam("query");
+
+      if (!query) {
+        alert("No search term provided.");
+        return;
+      }
+
+      fetchMovieIndexes(query)
+        .then((indexes) => {
+          allIndexes = indexes;
+          totalPages = Math.ceil(allIndexes.length / PAGE_SIZE);
+          renderPage(currentPage);
+        })
+        .catch((error) => {
+          console.error("Error fetching movie indexes:", error);
+        });
+    });
+
+    function getQueryParam(param) {
+      const urlParams = new URLSearchParams(window.location.search);
+      return urlParams.get(param);
+    }
+
+    function fetchMovieIndexes(searchTerm) {
+      return fetch("/IndexSearches", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ query: searchTerm }),
+      }).then((res) => res.json());
+    }
+
+    function fetchMovieDetails(indexes) {
+      return fetch("/movieInfo", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ indexes }),
+      })
+      .then((res) => res.json())
+      .then((data) => {
+        const { movieimages, movietitles } = data;
+        return movieimages.map((img, i) => ({
+          image: img,
+          title: movietitles[i] || "Untitled",
+          index:indexes[i]
+        }));
+      });
+    }
+
+    function renderPage(page) {
+      const start = (page - 1) * PAGE_SIZE;
+      const end = start + PAGE_SIZE;
+      const indexesForPage = allIndexes.slice(start, end);
+
+      fetchMovieDetails(indexesForPage)
+        .then((movies) => {
+          renderMovies(movies);
+          renderPagination();
+        })
+        .catch((error) => {
+          console.error("Error fetching movie details:", error);
+        });
+    }
+
+    function renderMovies(movies) {
+      const grid = document.getElementById("movies-grid");
+      grid.innerHTML = "";
+
+      movies.forEach((movie) => {
+        const tile = document.createElement("div");
+        tile.className = "movie-tile";
+        tile.innerHTML = `
+          <img src="${movie.image}" alt="${movie.title}" class = "clickable-image" identity ="${movie.index}"/>
+          <div class="movie-title">${movie.title}</div>
+        `;
+        grid.appendChild(tile);
+      });
+    }
+    
+
+    function renderPagination() {
+      const pagination = document.getElementById("pagination");
+      pagination.innerHTML = "";
+
+      for (let i = 1; i <= totalPages; i++) {
+        const button = document.createElement("button");
+        button.textContent = i;
+        button.className = i === currentPage ? "active" : "";
+        button.disabled = i === currentPage;
+        button.addEventListener("click", () => {
+          currentPage = i;
+          renderPage(currentPage);
+        });
+        pagination.appendChild(button);
+      }
+    }
+    $(document).on("click", ".clickable-image", function() {
+  const movieID = $(this).attr("identity");
+  window.location.href = "/player.html?movieID=" + encodeURIComponent(movieID);
+    });
+    $(document).ready(function () {
+  $("#Searchbar").keyup(function (event) {
+    if (event.keyCode == 13) {
+      event.preventDefault();
+      var name = $("#Searchbar").val();
+      if (!name.trim()) return;
+
+      // Just redirect to searchresults with query in URL
+      window.location.href = "/searchresults.html?query=" + encodeURIComponent(name);
+    }
+  });
+});
+
+  </script>
+</body>
+</html>

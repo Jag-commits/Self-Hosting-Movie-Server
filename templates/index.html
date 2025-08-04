@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href = "images\icon.png">
     <title>Movies</title>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.0/socket.io.js"></script>
@@ -89,7 +90,9 @@
     </style>
 </head>
 <body>
-    
+    <div class="header">
+        <img src="https://hianime.to/images/logo.png?v=0.1" alt="" id="logo">
+    </div>
     <div class = "Forms">
         <input type="text" placeholder="Enter Movie Name" id="Searchbar">
     </div>
@@ -147,21 +150,22 @@
 });    
 $(document).ready(function() {
     $(".clickable-image").click(function() {
-        var buttonNumber = $(this).attr("identity");
-        window.location.href = "/player.html?buttonNumber=" + encodeURIComponent(buttonNumber)
+        var movieID = $(this).attr("identity");
+        window.location.href = "/player.html?movieID=" + encodeURIComponent(movieID)
     });
 });
 
-$(document).ready(function() {
-    $("#Searchbar").on("input", function(event)  {
-        if (event.key=="Enter"){
-        var name = $('#Searchbar').val();
-        $.post("/NameSearch", { moviename: name }, function(data) {
-            var buttonNumber = data.movienumber;
-            window.location.href = "/player.html?buttonNumber=" + encodeURIComponent(buttonNumber);
-        });    
+$(document).ready(function () {
+  $("#Searchbar").keyup(function (event) {
+    if (event.keyCode == 13) {
+      event.preventDefault();
+      var name = $("#Searchbar").val();
+      if (!name.trim()) return;
+
+      // Just redirect to searchresults with query in URL
+      window.location.href = "/searchresults.html?query=" + encodeURIComponent(name);
     }
-    });
+  });
 });
 
 $(document).ready(function() {

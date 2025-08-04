@@ -101,9 +101,9 @@
     <script>
         $(document).ready(function() {
         var urlParams = new URLSearchParams(window.location.search);
-        var movienum = urlParams.get('buttonNumber');
+        var movienum = urlParams.get('movieID');
     
-        $.post("/links", { button_number: movienum }, function(data) {
+        $.post("/links", { movieID: movienum }, function(data) {
             var linkmovie = data.link;
             document.getElementById('embedded-content').src = linkmovie;
         });
