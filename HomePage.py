@@ -4,16 +4,9 @@ import requests
 import random
 class Homepage:
     def indexpull(TMDBname:list, movieset:list,apiKey:str):
-        temporarylist=[]
-        #shit's kinda ass, using a hashset that evaluates if len(5) later
-        for x in range(5):
-            while True:
-                value=random.choice(movieset)
-                if value in temporarylist:
-                    continue
-                else:
-                    temporarylist.append(value)
-                    break
+        #shit's kinda ass, using a hashset that evaluates if len(5) later.
+        #Ight I fixed it, now its close to O(1), this was faster than the hashset
+        temporarylist=random.sample(movieset,5)
         b1=temporarylist[0]
         b2=temporarylist[1]
         b3=temporarylist[2]
